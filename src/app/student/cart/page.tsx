@@ -93,9 +93,9 @@ export default function CartPage() {
               <Link href="/student/menu" className="btn-ghost">
                 Continue shopping
               </Link>
-              <Link href="/student/checkout" className="btn-primary">
+              <a href="/student/checkout" className="btn-primary">
                 Proceed to checkout
-              </Link>
+              </a>
             </div>
           </div>
         </>
