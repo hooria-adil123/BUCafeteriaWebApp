@@ -7,7 +7,7 @@
       "enrollmentId": "02-134251-019",
       "passwordHash": "158323d9442962516e0b02fa69e8274119b0f1815b398c7fc7036ff3917f0b7a",
       "role": "student",
-      "walletBalance": 4470,
+      "walletBalance": 5000,
       "createdAt": "2026-09-13T03:24:22.199Z"
     },
     {
@@ -203,86 +203,5 @@
   ],
   "sessions": [],
   "carts": [],
-  "orders": [
-    {
-      "id": 101,
-      "orderNumber": "BU-6213",
-      "studentId": 100,
-      "pickupSlotId": 2,
-      "paymentMethod": "cash",
-      "status": "preparing",
-      "totalPkr": 490,
-      "notes": null,
-      "createdAt": "2026-09-13T14:09:22.268Z",
-      "acceptedAt": "2026-09-13T14:35:16.651Z",
-      "preparingAt": "2026-09-13T14:35:33.188Z",
-      "readyAt": null,
-      "pickedUpAt": null,
-      "items": [
-        {
-          "id": 789,
-          "orderId": 101,
-          "menuItemId": 2,
-          "name": "Spaghetti",
-          "unitPrice": 250,
-          "quantity": 1
-        },
-        {
-          "id": 2326,
-          "orderId": 101,
-          "menuItemId": 3,
-          "name": "Pasta",
-          "unitPrice": 240,
-          "quantity": 1
-        }
-      ],
-      "slot": {
-        "id": 2,
-        "label": "12:00 PM",
-        "sortOrder": 2,
-        "capacity": 15,
-        "active": true
-      }
-    },
-    {
-      "id": 100,
-      "orderNumber": "BU-4595",
-      "studentId": 100,
-      "pickupSlotId": 4,
-      "paymentMethod": "wallet",
-      "status": "preparing",
-      "totalPkr": 530,
-      "notes": null,
-      "createdAt": "2026-09-13T13:58:43.543Z",
-      "acceptedAt": "2026-09-13T14:35:22.701Z",
-      "preparingAt": "2026-09-13T14:35:30.841Z",
-      "readyAt": null,
-      "pickedUpAt": null,
-      "items": [
-        {
-          "id": 2637,
-          "orderId": 100,
-          "menuItemId": 1,
-          "name": "Biryani",
-          "unitPrice": 280,
-          "quantity": 1
-        },
-        {
-          "id": 337,
-          "orderId": 100,
-          "menuItemId": 2,
-          "name": "Spaghetti",
-          "unitPrice": 250,
-          "quantity": 1
-        }
-      ],
-      "slot": {
-        "id": 4,
-        "label": "1:00 PM",
-        "sortOrder": 4,
-        "capacity": 15,
-        "active": true
-      }
-    }
-  ]
+  "orders": []
 }

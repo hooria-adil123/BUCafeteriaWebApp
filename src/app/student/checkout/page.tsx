@@ -32,6 +32,8 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<"cash" | "wallet">("cash");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [orderPlacementOpen, setOrderPlacementOpen] = useState(false);
+  const [orderPlacementWindow, setOrderPlacementWindow] = useState("8:30 AM – 5:30 PM");
 
   useEffect(() => {
     fetch("/api/checkout")
@@ -41,12 +43,18 @@ export default function CheckoutPage() {
         setTotal(d.total ?? 0);
         setSlots(d.slots ?? []);
         setUser(d.user ?? null);
+        setOrderPlacementOpen(d.orderPlacementOpen ?? false);
+        setOrderPlacementWindow(d.orderPlacementWindow ?? "8:30 AM – 5:30 PM");
       })
       .finally(() => setLoading(false));
   }, []);
 
   async function confirm() {
     setError("");
+    if (!orderPlacementOpen) {
+      setError(`The cafeteria has been closed. Orders can only be placed between ${orderPlacementWindow}.`);
+      return;
+    }
     if (!slotId) {
       setError("Please select a pickup time.");
       return;
@@ -91,6 +99,21 @@ export default function CheckoutPage() {
       <h1 className="font-display text-4xl text-navy">Checkout</h1>
       <p className="mt-2 text-ocean">Menu → Cart → Pickup time → Payment → Confirmation</p>
 
+      {!orderPlacementOpen ? (
+        <div className="mt-5 rounded-3xl border border-rose-200 bg-rose-50 p-5 text-rose-900 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h3 className="text-lg font-bold">The cafeteria has been closed</h3>
+              <p className="mt-1 text-sm text-rose-800">
+                Orders can only be placed and accepted between <strong>{orderPlacementWindow}</strong>.
+                Order placement is currently closed.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <section className="mt-6 rounded-3xl bg-white p-5">
         <h2 className="font-display text-2xl">1. Student information</h2>
         <p className="mt-2">{user?.name}</p>
@@ -115,7 +138,7 @@ export default function CheckoutPage() {
       <section className="mt-4 rounded-3xl bg-white p-5">
         <h2 className="font-display text-2xl">3. Pickup time</h2>
         <p className="mt-1 text-sm text-ocean">
-          Full slots are disabled to prevent rush-hour overload.
+          Orders are accepted daily between {orderPlacementWindow}. Full slots are disabled to prevent rush-hour overload.
         </p>
         <div className="mt-4">
           <PickupSlotPicker slots={slots} value={slotId} onChange={setSlotId} />
@@ -150,8 +173,21 @@ export default function CheckoutPage() {
         </div>
       ) : null}
 
-      <button className="btn-primary mt-6 w-full" disabled={busy} type="button" onClick={confirm}>
-        {busy ? "Confirming…" : `Confirm order${selected ? ` · pickup ${selected.label}` : ""}`}
+      <button
+        className={`mt-6 w-full ${
+          orderPlacementOpen && !busy
+            ? "btn-primary"
+            : "rounded-full bg-slate-200 py-3.5 px-6 font-bold text-slate-500 cursor-not-allowed opacity-80"
+        }`}
+        disabled={busy || !orderPlacementOpen}
+        type="button"
+        onClick={confirm}
+      >
+        {busy
+          ? "Confirming…"
+          : !orderPlacementOpen
+          ? `The cafeteria has been closed (Open ${orderPlacementWindow})`
+          : `Confirm order${selected ? ` · pickup ${selected.label}` : ""}`}
       </button>
     </main>
   );

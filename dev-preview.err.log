@@ -1,0 +1,23 @@
+
+<--- Last few GCs --->
+
+[9176:00000242A9C12000]     2100 ms: Scavenge 36.5 (58.3) -> 29.5 (60.6) MB, pooled: 0 MB, 3.76 / 0.00 ms  (average mu = 0.994, current mu = 0.994) allocation failure; 
+[9176:00000242A9C12000]     2223 ms: Scavenge 29.5 (60.6) -> 29.3 (62.3) MB, pooled: 0 MB, 123.09 / 0.00 ms  (average mu = 0.994, current mu = 0.994) allocation failure; 
+
+FATAL ERROR: MarkCompactCollector: young object promotion failed Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF65E5A3D9F 
+ 2: 00007FF65D1EDCB7 
+ 3: 00007FF65CFEE4F7 
+ 4: 00007FF65CFCDBEE 
+ 5: 00007FF65CFC32AD 
+ 6: 00007FF65CFC2F5C 
+ 7: 00007FF65CFC2BA1 
+ 8: 00007FF65CFD5098 
+ 9: 00007FF65D9C6C6F 
+10: 00007FF65E4E944B 
+11: 00007FF65D242D76 
+12: 00007FF65E8EDC73 
+13: 00007FFA95FB7374 
+14: 00007FFA96AFCC91 

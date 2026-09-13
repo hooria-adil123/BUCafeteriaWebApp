@@ -4,7 +4,8 @@ import { db } from "@/db";
 import { cartItems, menuItems, orderItems, orders, pickupSlots, users } from "@/db/schema";
 import { createSignedOrderCookie, ORDER_COOKIE, requireUser } from "@/lib/auth";
 import { getCart, getSlotsWithUsage, nextOrderNumber } from "@/lib/data";
-import { startOfToday } from "@/lib/utils";
+import { cookies } from "next/headers";
+import { isWithinOrderPlacementHours, ORDER_PLACEMENT_WINDOW, startOfToday, type CafeHoursMode } from "@/lib/utils";
 import { and, count, gte } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,22 @@ export async function POST(request: Request) {
     return Response.json(
       { error: "You don’t have permission to access this page." },
       { status: 403 },
+    );
+  }
+
+  const cookieStore = await cookies();
+  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
+  const overrideMode: CafeHoursMode | null =
+    rawMode === "open" || rawMode === "closed" ? rawMode : null;
+
+  if (!isWithinOrderPlacementHours(new Date(), overrideMode)) {
+    return Response.json(
+      {
+        error: `The cafeteria has been closed. Orders can only be placed between ${ORDER_PLACEMENT_WINDOW}.`,
+        closed: true,
+        orderPlacementWindow: ORDER_PLACEMENT_WINDOW,
+      },
+      { status: 400 },
     );
   }
 
@@ -211,13 +228,25 @@ export async function GET() {
       { status: 403 },
     );
   }
+  const cookieStore = await cookies();
+  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
+  const overrideMode: CafeHoursMode | null =
+    rawMode === "open" || rawMode === "closed" ? rawMode : null;
+
   const cart = await getCart(user.id);
   const slots = await getSlotsWithUsage();
   const total = cart.reduce((s, i) => s + i.menuItem.pricePkr * i.quantity, 0);
+  const open = isWithinOrderPlacementHours(new Date(), overrideMode);
+
   return Response.json({
     cart,
     total,
     slots,
     user,
+    orderPlacementOpen: open,
+    orderPlacementWindow: ORDER_PLACEMENT_WINDOW,
+    message: open
+      ? `Orders are open (${ORDER_PLACEMENT_WINDOW}).`
+      : `The cafeteria has been closed. Orders can only be placed between ${ORDER_PLACEMENT_WINDOW}.`,
   });
 }

@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
+import { cookies } from "next/headers";
 import { requireUser } from "@/lib/auth";
-import { nextStatus, ORDER_FLOW } from "@/lib/utils";
+import { nextStatus, ORDER_FLOW, isWithinOrderPlacementHours, ORDER_PLACEMENT_WINDOW, type CafeHoursMode } from "@/lib/utils";
 import { fallbackOrders, savePersistedData } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return Response.json({ error: "Orders must move through each stage in sequence." }, { status: 400 });
   }
 
+  const cookieStore = await cookies();
+  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
+  const overrideMode: CafeHoursMode | null =
+    rawMode === "open" || rawMode === "closed" ? rawMode : null;
+
   const now = new Date();
+
+  if (target === "accepted" && !isWithinOrderPlacementHours(now, overrideMode)) {
+    return Response.json(
+      {
+        error: `The cafeteria has been closed. Orders can only be accepted between ${ORDER_PLACEMENT_WINDOW}.`,
+        closed: true,
+        orderPlacementWindow: ORDER_PLACEMENT_WINDOW,
+      },
+      { status: 400 },
+    );
+  }
   const patch: Partial<typeof orders.$inferInsert> = { status: target };
   if (target === "accepted") patch.acceptedAt = now;
   if (target === "preparing") patch.preparingAt = now;

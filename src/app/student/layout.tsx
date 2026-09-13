@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCart } from "@/lib/data";
 import { StudentNav } from "@/components/shells";
+import { HoursSimulator } from "@/components/hours-simulator";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function StudentLayout({ children }: { children: ReactNode 
   return (
     <div className="min-h-screen bg-ice">
       <StudentNav name={user.name} cartCount={cartCount} />
+      <HoursSimulator />
       {children}
     </div>
   );

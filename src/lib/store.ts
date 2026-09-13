@@ -707,3 +707,34 @@ export function getFallbackUserBySession(token: string): User | null {
   }
   return fallbackUsers.find((u) => u.id === session.userId) ?? null;
 }
+
+export function clearOrdersForUser(studentId: number) {
+  // Remove from in-memory fallbackOrders
+  for (let i = fallbackOrders.length - 1; i >= 0; i--) {
+    if (fallbackOrders[i].studentId === studentId) {
+      fallbackOrders.splice(i, 1);
+    }
+  }
+  // Clear user cart
+  fallbackCarts.delete(studentId);
+
+  // Restore the standard student wallet balance
+  const student = fallbackUsers.find((u) => u.id === studentId);
+  if (student?.role === "student") {
+    student.walletBalance = 5000;
+  }
+  savePersistedData();
+}
+
+export function clearAllOrders() {
+  fallbackOrders.length = 0;
+  fallbackCarts.clear();
+  const hooria = fallbackUsers.find(
+    (u) => u.enrollmentId === "02-134251-019" || u.email.toLowerCase() === "hooriaa619@gmail.com",
+  );
+  if (hooria) {
+    hooria.walletBalance = 5000;
+  }
+  savePersistedData();
+}
+

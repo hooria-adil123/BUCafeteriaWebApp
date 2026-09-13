@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { listOrders } from "@/lib/data";
 import { OrderCard } from "@/components/orders";
 import { EmptyState } from "@/components/ui";
+import { ClearOrdersButton } from "@/components/clear-orders-button";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,13 @@ export default async function StudentOrdersPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="font-display text-4xl text-navy">My orders</h1>
-      <p className="mt-2 text-ocean">Every pre-order, pickup slot and payment method in one place.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-4xl text-navy">My orders</h1>
+          <p className="mt-2 text-ocean">Every pre-order, pickup slot and payment method in one place.</p>
+        </div>
+        <ClearOrdersButton />
+      </div>
       {orders.length === 0 ? (
         <div className="mt-6">
           <EmptyState

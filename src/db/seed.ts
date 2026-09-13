@@ -507,60 +507,14 @@ async function seedIfNeeded() {
 
   const slotAt = (label: string) => insertedSlots.find((s) => s.label === label)!;
 
-  const sampleOrders = [
-    {
-      studentId: student.id,
-      slot: slotAt("12:30 PM"),
-      status: "preparing",
-      payment: "wallet",
-      items: [
-        { item: byName["Biryani"], qty: 1 },
-        { item: byName["Chai"], qty: 1 },
-      ],
-      minutesAgo: 25,
-    },
-    {
-      studentId: sara.id,
-      slot: slotAt("12:45 PM"),
-      status: "placed",
-      payment: "cash",
-      items: [
-        { item: byName["Zinger Burger"], qty: 1 },
-        { item: byName["Loaded Fries"], qty: 1 },
-      ],
-      minutesAgo: 8,
-    },
-    {
-      studentId: hassan.id,
-      slot: slotAt("1:00 PM"),
-      status: "accepted",
-      payment: "wallet",
-      items: [
-        { item: byName["Pizza"], qty: 1 },
-        { item: byName["Oreo Shake"], qty: 1 },
-      ],
-      minutesAgo: 18,
-    },
-    {
-      studentId: sara.id,
-      slot: slotAt("12:15 PM"),
-      status: "ready",
-      payment: "cash",
-      items: [{ item: byName["Shawarma"], qty: 2 }],
-      minutesAgo: 40,
-    },
-    {
-      studentId: hassan.id,
-      slot: slotAt("11:45 AM"),
-      status: "picked_up",
-      payment: "wallet",
-      items: [
-        { item: byName["Club Sandwich"], qty: 1 },
-        { item: byName["Iced Coffee"], qty: 1 },
-      ],
-      minutesAgo: 90,
-    },
-  ];
+  const sampleOrders: Array<{
+    studentId: number;
+    slot: (typeof insertedSlots)[number];
+    status: string;
+    payment: string;
+    items: Array<{ item: (typeof insertedMenu)[number]; qty: number }>;
+    minutesAgo: number;
+  }> = [];
 
   let orderSeq = 1042;
   for (const sample of sampleOrders) {
@@ -608,7 +562,7 @@ async function seedIfNeeded() {
   // Fill the 1:00 PM slot to demonstrate rush-hour capacity (10/10).
   const fullSlot = slotAt("1:00 PM");
   const fillerStudents = [student.id, sara.id, hassan.id, insertedUsers[3].id];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 0; i++) {
     const item = byName["Beef Burger"];
     const [order] = await db
       .insert(orders)

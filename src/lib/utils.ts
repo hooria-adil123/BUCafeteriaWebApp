@@ -34,6 +34,54 @@ export function formatTime(value: Date | string) {
   return d.toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" });
 }
 
+export const ORDER_PLACEMENT_WINDOW = "8:30 AM – 5:30 PM";
+export const CAFE_OPEN_MINUTES = 8 * 60 + 30; // 510 minutes -> 8:30 AM
+export const CAFE_CLOSE_MINUTES = 17 * 60 + 30; // 1050 minutes -> 5:30 PM
+
+export type CafeHoursMode = "auto" | "open" | "closed";
+
+export function getKarachiMinutes(value = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Karachi",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(value);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+  return hour * 60 + minute;
+}
+
+export function isWithinOrderPlacementHours(
+  value = new Date(),
+  overrideMode?: CafeHoursMode | null,
+) {
+  if (overrideMode === "open") return true;
+  if (overrideMode === "closed") return false;
+
+  if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FORCE_CAFE_HOURS) {
+    if (process.env.NEXT_PUBLIC_FORCE_CAFE_HOURS === "open") return true;
+    if (process.env.NEXT_PUBLIC_FORCE_CAFE_HOURS === "closed") return false;
+  }
+
+  const currentMinutes = getKarachiMinutes(value);
+  return currentMinutes >= CAFE_OPEN_MINUTES && currentMinutes < CAFE_CLOSE_MINUTES;
+}
+
+export function getCafeteriaStatus(
+  value = new Date(),
+  overrideMode?: CafeHoursMode | null,
+) {
+  const isOpen = isWithinOrderPlacementHours(value, overrideMode);
+  return {
+    isOpen,
+    window: ORDER_PLACEMENT_WINDOW,
+    message: isOpen
+      ? `The cafeteria is currently open for orders (${ORDER_PLACEMENT_WINDOW}).`
+      : `The cafeteria has been closed. Orders can only be placed and accepted between ${ORDER_PLACEMENT_WINDOW}.`,
+  };
+}
+
 export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }

@@ -99,7 +99,7 @@ export default async function HomePage() {
         <div className="rounded-3xl bg-white p-8 shadow-sm">
           <h2 className="font-display text-3xl text-navy">Cafeteria hours</h2>
           <p className="mt-3 text-ocean">Karachi Campus · Monday to Saturday</p>
-          <p className="mt-6 font-display text-4xl text-ocean">8:00 AM – 6:00 PM</p>
+          <p className="mt-6 font-display text-4xl text-ocean">8:30 AM – 5:30 PM</p>
           <p className="mt-4 text-sm text-ocean">
             Peak lunch window is 12:15–1:30 PM. Pickup slot capacity spreads orders so the counter
             never overloads.

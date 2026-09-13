@@ -24,6 +24,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [role, setRole] = useState("");
+  const [isOpen, setIsOpen] = useState(true);
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/orders");
@@ -43,6 +45,14 @@ export default function AdminOrdersPage() {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => setRole(d.user?.role ?? ""));
+
+    fetch("/api/test-hours")
+      .then((r) => r.json())
+      .then((d) => {
+        setIsOpen(d.isOpen ?? true);
+        setWindowLabel(d.window ?? "8:30 AM – 5:30 PM");
+      })
+      .catch(() => {});
   }, []);
 
   const grouped = useMemo(() => {
@@ -57,6 +67,10 @@ export default function AdminOrdersPage() {
   async function advance(order: Order) {
     const status = nextStatus(order.status);
     if (!status) return;
+    if (status === "accepted" && !isOpen) {
+      setError(`The cafeteria has been closed. Orders can only be accepted between ${windowLabel}.`);
+      return;
+    }
     const res = await fetch(`/api/orders/${order.id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -67,6 +81,7 @@ export default function AdminOrdersPage() {
       setError(data.error || "Unable to update order.");
       return;
     }
+    setError("");
     await load();
   }
 
@@ -78,8 +93,18 @@ export default function AdminOrdersPage() {
     <main>
       <h1 className="font-display text-4xl text-navy">Incoming orders</h1>
       <p className="mt-2 text-ocean">
-        Pickup time is shown first so staff can prepare for the next rush window.
+        Pickup time is shown first so staff can prepare for the next rush window. Orders can be placed and accepted between {windowLabel}.
       </p>
+
+      {!isOpen ? (
+        <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-900 shadow-sm">
+          <p className="font-bold">⚠️ The cafeteria has been closed</p>
+          <p className="mt-1 text-sm text-rose-800">
+            Orders can only be accepted between <strong>{windowLabel}</strong>. Accepting new orders is currently restricted.
+          </p>
+        </div>
+      ) : null}
+
       {error ? (
         <div className="mt-4">
           <Notice kind="error">{error}</Notice>
@@ -97,31 +122,49 @@ export default function AdminOrdersPage() {
               </span>
             </div>
             <div className="space-y-3">
-              {(grouped[col] ?? []).map((order) => (
-                <article key={order.id} className="rounded-2xl border border-sky p-3">
-                  <p className="text-xs font-bold uppercase text-cyan">Pickup {order.slotLabel}</p>
-                  <p className="font-display text-xl">{order.orderNumber}</p>
-                  <p className="text-sm">
-                    {order.studentName} · {order.enrollmentId}
-                  </p>
-                  <p className="mt-1 text-xs text-ocean">
-                    {order.items.map((i) => `${i.quantity}× ${i.name}`).join(", ")}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <StatusBadge status={order.status} />
-                    <span className="text-xs font-bold">{formatPkr(order.totalPkr)}</span>
-                  </div>
-                  {canUpdate && nextStatus(order.status) ? (
-                    <button
-                      type="button"
-                      className="btn-primary mt-3 w-full py-2 text-sm"
-                      onClick={() => advance(order)}
-                    >
-                      Mark {STATUS_LABELS[nextStatus(order.status)!]}
-                    </button>
-                  ) : null}
-                </article>
-              ))}
+              {(grouped[col] ?? []).map((order) => {
+                const next = nextStatus(order.status);
+                const isAcceptAction = next === "accepted";
+                const isBlocked = isAcceptAction && !isOpen;
+
+                return (
+                  <article key={order.id} className="rounded-2xl border border-sky p-3">
+                    <p className="text-xs font-bold uppercase text-cyan">Pickup {order.slotLabel}</p>
+                    <p className="font-display text-xl">{order.orderNumber}</p>
+                    <p className="text-sm">
+                      {order.studentName} · {order.enrollmentId}
+                    </p>
+                    <p className="mt-1 text-xs text-ocean">
+                      {order.items.map((i) => `${i.quantity}× ${i.name}`).join(", ")}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <StatusBadge status={order.status} />
+                      <span className="text-xs font-bold">{formatPkr(order.totalPkr)}</span>
+                    </div>
+                    {canUpdate && next ? (
+                      <button
+                        type="button"
+                        disabled={isBlocked}
+                        className={`mt-3 w-full py-2 text-sm ${
+                          isBlocked
+                            ? "rounded-full bg-slate-200 font-bold text-slate-500 cursor-not-allowed"
+                            : "btn-primary"
+                        }`}
+                        onClick={() => advance(order)}
+                        title={
+                          isBlocked
+                            ? `Cafeteria is closed. Orders can only be accepted between ${windowLabel}.`
+                            : undefined
+                        }
+                      >
+                        {isBlocked
+                          ? `Closed (Accept ${windowLabel})`
+                          : `Mark ${STATUS_LABELS[next]}`}
+                      </button>
+                    ) : null}
+                  </article>
+                );
+              })}
             </div>
           </section>
         ))}

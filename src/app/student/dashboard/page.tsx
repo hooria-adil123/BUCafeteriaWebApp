@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { and, desc, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { menuItems, orders, pickupSlots } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
-import { formatPkr } from "@/lib/utils";
+import { formatPkr, getCafeteriaStatus, type CafeHoursMode } from "@/lib/utils";
 import { FoodCard } from "@/components/food";
 import { OrderTracker } from "@/components/orders";
 import { DashboardCard } from "@/components/ui";
@@ -13,6 +14,12 @@ export const dynamic = "force-dynamic";
 export default async function StudentDashboard() {
   const user = await getCurrentUser();
   if (!user) return null;
+
+  const cookieStore = await cookies();
+  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
+  const overrideMode: CafeHoursMode | null =
+    rawMode === "open" || rawMode === "closed" ? rawMode : null;
+  const status = getCafeteriaStatus(new Date(), overrideMode);
 
   let currentRows: { order: typeof orders.$inferSelect; slot: typeof pickupSlots.$inferSelect }[] = [];
   let popular: (typeof menuItems.$inferSelect)[] = [];
@@ -29,9 +36,13 @@ export default async function StudentDashboard() {
     popular = await db.select().from(menuItems).where(eq(menuItems.popular, true)).limit(4);
     available = await db.select().from(menuItems).where(eq(menuItems.available, true)).limit(8);
   } catch {
-    const { FALLBACK_MENU } = await import("@/lib/store");
+    const { FALLBACK_MENU, fallbackOrders } = await import("@/lib/store");
     popular = FALLBACK_MENU.filter((m) => m.popular).slice(0, 4);
     available = FALLBACK_MENU.filter((m) => m.available).slice(0, 8);
+    const fbCurrent = fallbackOrders.find((o) => o.studentId === user.id && o.status !== "picked_up");
+    if (fbCurrent && fbCurrent.slot) {
+      currentRows = [{ order: fbCurrent, slot: fbCurrent.slot }];
+    }
   }
   const current = currentRows[0];
 
@@ -55,7 +66,12 @@ export default async function StudentDashboard() {
           value={current ? current.slot.label : "None"}
           hint={current ? `Order ${current.order.orderNumber}` : "Place an order to reserve a slot"}
         />
-        <DashboardCard label="Cafeteria hours" value="8 AM – 6 PM" hint="Karachi campus · Mon–Sat" accent />
+        <DashboardCard
+          label="Order hours"
+          value="8:30 AM – 5:30 PM"
+          hint={status.isOpen ? "🟢 Open for orders · Mon–Sat" : "🔴 Closed for orders · Mon–Sat"}
+          accent={status.isOpen}
+        />
       </div>
 
       <div className="mt-8">

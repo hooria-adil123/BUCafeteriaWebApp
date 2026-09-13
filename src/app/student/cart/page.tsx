@@ -16,6 +16,8 @@ export default function CartPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isOpen, setIsOpen] = useState(true);
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   async function load() {
     const res = await fetch("/api/cart");
@@ -26,6 +28,14 @@ export default function CartPage() {
       setItems(data.items);
       setTotal(data.total);
     }
+
+    try {
+      const hRes = await fetch("/api/test-hours");
+      const hData = await hRes.json();
+      setIsOpen(hData.isOpen ?? true);
+      setWindowLabel(hData.window ?? "8:30 AM – 5:30 PM");
+    } catch {}
+
     setLoading(false);
   }
 
@@ -50,6 +60,16 @@ export default function CartPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="font-display text-4xl text-navy">Your cart</h1>
+
+      {!isOpen ? (
+        <div className="mt-4 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-900 shadow-sm">
+          <p className="font-bold">⚠️ The cafeteria has been closed</p>
+          <p className="mt-1 text-sm text-rose-800">
+            Orders are only placed and accepted between <strong>{windowLabel}</strong>. You can review items now, but checkout will open during operating hours.
+          </p>
+        </div>
+      ) : null}
+
       {error ? (
         <div className="mt-4">
           <Notice kind="error">{error}</Notice>

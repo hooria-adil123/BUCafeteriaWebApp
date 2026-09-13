@@ -17,12 +17,22 @@ export default function MenuPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   useEffect(() => {
     fetch("/api/menu")
       .then((r) => r.json())
       .then((d: { items: MenuItem[] }) => setItems(d.items))
       .finally(() => setLoading(false));
+
+    fetch("/api/test-hours")
+      .then((r) => r.json())
+      .then((d) => {
+        setIsOpen(d.isOpen ?? true);
+        setWindowLabel(d.window ?? "8:30 AM – 5:30 PM");
+      })
+      .catch(() => {});
   }, []);
 
   const filtered = useMemo(() => {
@@ -59,8 +69,23 @@ export default function MenuPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="font-display text-4xl text-navy">Cafeteria menu</h1>
-      <p className="mt-2 text-ocean">Prices in PKR · availability updates as items sell out.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-4xl text-navy">Cafeteria menu</h1>
+          <p className="mt-2 text-ocean">Prices in PKR · availability updates as items sell out.</p>
+        </div>
+        <div
+          className={`rounded-2xl border px-3.5 py-1.5 text-xs font-bold ${
+            isOpen
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {isOpen
+            ? `🟢 Orders Open (${windowLabel})`
+            : `🔴 Cafeteria Closed (Hours: ${windowLabel})`}
+        </div>
+      </div>
 
       <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center">
         <input
