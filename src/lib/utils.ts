@@ -1,0 +1,85 @@
+import { createHash, randomBytes } from "crypto";
+
+export function hashPassword(password: string) {
+  return createHash("sha256").update(`bu-cafe-v1:${password}`).digest("hex");
+}
+
+export function newId() {
+  return randomBytes(24).toString("hex");
+}
+
+export function formatPkr(amount: number) {
+  return `Rs. ${amount.toLocaleString("en-PK")}`;
+}
+
+export function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+export function formatDateTime(value: Date | string) {
+  const d = typeof value === "string" ? new Date(value) : value;
+  return d.toLocaleString("en-PK", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export function formatTime(value: Date | string) {
+  const d = typeof value === "string" ? new Date(value) : value;
+  return d.toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" });
+}
+
+export function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+export const ORDER_FLOW = [
+  "placed",
+  "accepted",
+  "preparing",
+  "ready",
+  "picked_up",
+] as const;
+
+export type OrderStatus = (typeof ORDER_FLOW)[number];
+
+export const STATUS_LABELS: Record<string, string> = {
+  placed: "Order Placed",
+  accepted: "Accepted",
+  preparing: "Preparing",
+  ready: "Ready",
+  picked_up: "Picked Up",
+};
+
+export const ROLE_LABELS: Record<string, string> = {
+  student: "Student",
+  staff: "Cafeteria Staff",
+  manager: "Cafeteria Manager",
+  admin: "University Administrator",
+  supplier: "Food Supplier",
+};
+
+export const CATEGORIES = [
+  "Breakfast",
+  "Fast Food",
+  "Pakistani Food",
+  "Snacks",
+  "Drinks",
+  "Desserts",
+] as const;
+
+export function nextStatus(status: string) {
+  const i = ORDER_FLOW.indexOf(status as OrderStatus);
+  if (i < 0 || i >= ORDER_FLOW.length - 1) return null;
+  return ORDER_FLOW[i + 1];
+}
+
+export function minutesBetween(a: Date | null, b: Date | null) {
+  if (!a || !b) return null;
+  return Math.max(0, Math.round((b.getTime() - a.getTime()) / 60000));
+}
