@@ -1,13 +1,16 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { sessions, users, type User } from "@/db/schema";
 import { hashPassword, newId } from "@/lib/utils";
-import { fallbackSessions, getFallbackUserBySession } from "@/lib/store";
+import { fallbackSessions, fallbackUsers, getFallbackUserBySession } from "@/lib/store";
 
 export const SESSION_COOKIE = "bu_session";
 const WEEK = 60 * 60 * 24 * 7;
+const FALLBACK_SESSION_SECRET =
+  process.env.SESSION_SECRET ?? "bu-cafeteria-development-session-secret";
 
 export type AuthUser = Omit<User, "passwordHash">;
 
@@ -31,13 +34,48 @@ export function sessionCookieOptions() {
 export async function createSession(userId: number) {
   const id = newId();
   const expiresAt = new Date(Date.now() + WEEK * 1000);
+  let databaseSessionCreated = false;
   try {
     await db.insert(sessions).values({ id, userId, expiresAt });
+    databaseSessionCreated = true;
   } catch (err) {
     console.warn("Database not available for session insert:", (err as Error).message);
   }
+  if (!databaseSessionCreated) {
+    return createStatelessFallbackSession(userId, expiresAt);
+  }
   fallbackSessions.set(id, { userId, expiresAt });
   return id;
+}
+
+function createStatelessFallbackSession(userId: number, expiresAt: Date) {
+  const payload = Buffer.from(JSON.stringify({ userId, expiresAt: expiresAt.toISOString() })).toString(
+    "base64url",
+  );
+  const signature = createHmac("sha256", FALLBACK_SESSION_SECRET).update(payload).digest("base64url");
+  return `fallback.${payload}.${signature}`;
+}
+
+function getStatelessFallbackUser(token: string) {
+  const parts = token.split(".");
+  if (parts.length !== 3 || parts[0] !== "fallback") return null;
+
+  const expected = createHmac("sha256", FALLBACK_SESSION_SECRET).update(parts[1]).digest();
+  const received = Buffer.from(parts[2], "base64url");
+  if (received.length !== expected.length || !timingSafeEqual(received, expected)) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as {
+      userId?: number;
+      expiresAt?: string;
+    };
+    if (!payload.userId || !payload.expiresAt || new Date(payload.expiresAt).getTime() < Date.now()) {
+      return null;
+    }
+    return payload.userId;
+  } catch {
+    return null;
+  }
 }
 
 export function withSessionCookie(response: NextResponse, sessionId: string) {
@@ -95,7 +133,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 
   const fallback = getFallbackUserBySession(token);
-  return fallback ? publicUser(fallback) : null;
+  if (fallback) return publicUser(fallback);
+
+  const statelessUserId = getStatelessFallbackUser(token);
+  if (!statelessUserId) return null;
+  const statelessUser = fallbackUsers.find((user) => user.id === statelessUserId);
+  return statelessUser ? publicUser(statelessUser) : null;
 }
 
 export async function requireUser(roles?: string[]) {
