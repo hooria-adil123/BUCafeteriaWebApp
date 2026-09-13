@@ -146,7 +146,7 @@ export async function POST(request: Request) {
 
     await db.delete(cartItems).where(eq(cartItems.userId, user.id));
   } catch {
-    const { fallbackOrders, fallbackCarts } = await import("@/lib/store");
+    const { fallbackOrders, fallbackCarts, savePersistedData } = await import("@/lib/store");
     const nextId = fallbackOrders.length + 100;
     order = {
       id: nextId,
@@ -176,6 +176,7 @@ export async function POST(request: Request) {
       slot,
     });
     fallbackCarts.delete(user.id);
+    savePersistedData();
   }
 
   const cachedOrder = {

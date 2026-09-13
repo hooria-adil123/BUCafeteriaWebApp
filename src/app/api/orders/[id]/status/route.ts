@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { nextStatus, ORDER_FLOW } from "@/lib/utils";
-import { fallbackOrders } from "@/lib/store";
+import { fallbackOrders, savePersistedData } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +55,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const fallback = fallbackOrders.find((item) => item.id === current.id);
     if (!fallback) return Response.json({ error: "Order not found." }, { status: 404 });
     Object.assign(fallback, patch);
+    savePersistedData();
     order = fallback;
   }
   return Response.json({ order });
