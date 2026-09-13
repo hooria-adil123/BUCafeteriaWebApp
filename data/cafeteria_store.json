@@ -7,7 +7,7 @@
       "enrollmentId": "02-134251-019",
       "passwordHash": "158323d9442962516e0b02fa69e8274119b0f1815b398c7fc7036ff3917f0b7a",
       "role": "student",
-      "walletBalance": 5000,
+      "walletBalance": 4470,
       "createdAt": "2026-09-13T03:24:22.199Z"
     },
     {
@@ -129,9 +129,160 @@
       "role": "supplier",
       "walletBalance": 0,
       "createdAt": "2026-09-13T03:24:22.199Z"
+    },
+    {
+      "id": 103,
+      "name": "Nayel",
+      "email": "staff1@cafeteria.com",
+      "enrollmentId": "STAFF-02",
+      "passwordHash": "9e338b99b2f45df1f70ccf87d2eddd3955a0fd7a3e95083b478d1c0125b22f5d",
+      "role": "staff",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 104,
+      "name": "Wahaj",
+      "email": "staff2@cafeteria.com",
+      "enrollmentId": "STAFF-03",
+      "passwordHash": "7ec5409ff5b2016279916daacecc396f1495fb3b2314bdca5c85ecb8bf143f92",
+      "role": "staff",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 105,
+      "name": "Rehan",
+      "email": "staff3@cafeteria.com",
+      "enrollmentId": "STAFF-04",
+      "passwordHash": "718c23bf01515fbb4ef2fc2c94bc4b1fcf6aabe3fa8e6a4e202ea3de686e20dc",
+      "role": "staff",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 106,
+      "name": "Ali",
+      "email": "staff4@cafeteria.com",
+      "enrollmentId": "STAFF-05",
+      "passwordHash": "bedd5bdd1ac0935c9af8d40d2e68898af016592bf259e0e975edec1d7c27e4c1",
+      "role": "staff",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 107,
+      "name": "Nehal",
+      "email": "foodsupplier1@cafeteria.com",
+      "enrollmentId": "SUP-03",
+      "passwordHash": "b31e92bfc7175aba5d2988eddf97d77a98d67202ffdfbdfa0b3e3117e8f707db",
+      "role": "supplier",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 108,
+      "name": "Mudassir",
+      "email": "foodsupplier2@cafeteria.com",
+      "enrollmentId": "SUP-04",
+      "passwordHash": "563bd77b5b344391c7a964f83adc203eaa801e48938090fa6d6ab2e4610da324",
+      "role": "supplier",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
+    },
+    {
+      "id": 109,
+      "name": "Arhum",
+      "email": "foodsupplier3@cafeteria.com",
+      "enrollmentId": "SUP-05",
+      "passwordHash": "bfb61a1c6cc508736b7796a82dc935636ccfcb93123cbd957f67fe2fc3957cbb",
+      "role": "supplier",
+      "walletBalance": 0,
+      "createdAt": "2026-09-13T14:26:54.446Z"
     }
   ],
   "sessions": [],
   "carts": [],
-  "orders": []
+  "orders": [
+    {
+      "id": 101,
+      "orderNumber": "BU-6213",
+      "studentId": 100,
+      "pickupSlotId": 2,
+      "paymentMethod": "cash",
+      "status": "preparing",
+      "totalPkr": 490,
+      "notes": null,
+      "createdAt": "2026-09-13T14:09:22.268Z",
+      "acceptedAt": "2026-09-13T14:35:16.651Z",
+      "preparingAt": "2026-09-13T14:35:33.188Z",
+      "readyAt": null,
+      "pickedUpAt": null,
+      "items": [
+        {
+          "id": 789,
+          "orderId": 101,
+          "menuItemId": 2,
+          "name": "Spaghetti",
+          "unitPrice": 250,
+          "quantity": 1
+        },
+        {
+          "id": 2326,
+          "orderId": 101,
+          "menuItemId": 3,
+          "name": "Pasta",
+          "unitPrice": 240,
+          "quantity": 1
+        }
+      ],
+      "slot": {
+        "id": 2,
+        "label": "12:00 PM",
+        "sortOrder": 2,
+        "capacity": 15,
+        "active": true
+      }
+    },
+    {
+      "id": 100,
+      "orderNumber": "BU-4595",
+      "studentId": 100,
+      "pickupSlotId": 4,
+      "paymentMethod": "wallet",
+      "status": "preparing",
+      "totalPkr": 530,
+      "notes": null,
+      "createdAt": "2026-09-13T13:58:43.543Z",
+      "acceptedAt": "2026-09-13T14:35:22.701Z",
+      "preparingAt": "2026-09-13T14:35:30.841Z",
+      "readyAt": null,
+      "pickedUpAt": null,
+      "items": [
+        {
+          "id": 2637,
+          "orderId": 100,
+          "menuItemId": 1,
+          "name": "Biryani",
+          "unitPrice": 280,
+          "quantity": 1
+        },
+        {
+          "id": 337,
+          "orderId": 100,
+          "menuItemId": 2,
+          "name": "Spaghetti",
+          "unitPrice": 250,
+          "quantity": 1
+        }
+      ],
+      "slot": {
+        "id": 4,
+        "label": "1:00 PM",
+        "sortOrder": 4,
+        "capacity": 15,
+        "active": true
+      }
+    }
+  ]
 }

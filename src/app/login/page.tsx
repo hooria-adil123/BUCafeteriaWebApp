@@ -17,10 +17,38 @@ function destination(role?: string) {
 const ADMIN_PRESETS = [
   {
     role: "staff",
-    label: "Staff",
+    label: "Bilal Raza",
     email: "staff@cafeteria.com",
     password: "12345",
     desc: "Kitchen board & orders",
+  },
+  {
+    role: "staff1",
+    label: "Nayel",
+    email: "staff1@cafeteria.com",
+    password: "12345",
+    desc: "Staff member",
+  },
+  {
+    role: "staff2",
+    label: "Wahaj",
+    email: "staff2@cafeteria.com",
+    password: "123456",
+    desc: "Staff member",
+  },
+  {
+    role: "staff3",
+    label: "Rehan",
+    email: "staff3@cafeteria.com",
+    password: "1234567",
+    desc: "Staff member",
+  },
+  {
+    role: "staff4",
+    label: "Ali",
+    email: "staff4@cafeteria.com",
+    password: "12345678",
+    desc: "Staff member",
   },
   {
     role: "manager",
@@ -38,12 +66,32 @@ const ADMIN_PRESETS = [
   },
 ] as const;
 
-const SUPPLIER_PRESET = {
-  label: "Food Supplier",
-  email: "foodsupplier@cafeteria.com",
-  password: "12345678",
-  desc: "Restock requests & delivery",
-};
+const SUPPLIER_PRESETS = [
+  {
+    label: "Karachi Fresh Supplies",
+    email: "foodsupplier@cafeteria.com",
+    password: "12345678",
+    desc: "Restock requests & delivery",
+  },
+  {
+    label: "Nehal",
+    email: "foodsupplier1@cafeteria.com",
+    password: "lom",
+    desc: "Food supplier",
+  },
+  {
+    label: "Mudassir",
+    email: "foodsupplier2@cafeteria.com",
+    password: "whenus",
+    desc: "Food supplier",
+  },
+  {
+    label: "Arhum",
+    email: "foodsupplier3@cafeteria.com",
+    password: "pxy",
+    desc: "Food supplier",
+  },
+] as const;
 
 const STUDENT_PRESETS = [
   {
@@ -136,8 +184,8 @@ function LoginForm() {
         // ignore
       }
       // Default to food supplier
-      setEmail(SUPPLIER_PRESET.email);
-      setPassword(SUPPLIER_PRESET.password);
+      setEmail(SUPPLIER_PRESETS[0].email);
+      setPassword(SUPPLIER_PRESETS[0].password);
     }
   }
 
@@ -164,7 +212,7 @@ function LoginForm() {
       if (!localStorage.getItem("bu_remembered_supplier")) {
         localStorage.setItem(
           "bu_remembered_supplier",
-          JSON.stringify({ email: SUPPLIER_PRESET.email, password: SUPPLIER_PRESET.password }),
+          JSON.stringify({ email: SUPPLIER_PRESETS[0].email, password: SUPPLIER_PRESETS[0].password }),
         );
       }
     } catch {
@@ -194,15 +242,15 @@ function LoginForm() {
     }
   }
 
-  function applySupplierPreset() {
-    setEmail(SUPPLIER_PRESET.email);
-    setPassword(SUPPLIER_PRESET.password);
+  function applySupplierPreset(preset: (typeof SUPPLIER_PRESETS)[number]) {
+    setEmail(preset.email);
+    setPassword(preset.password);
     setError("");
     if (rememberMe) {
       try {
         localStorage.setItem(
           "bu_remembered_supplier",
-          JSON.stringify({ email: SUPPLIER_PRESET.email, password: SUPPLIER_PRESET.password }),
+          JSON.stringify({ email: preset.email, password: preset.password }),
         );
       } catch {
         // ignore
@@ -357,22 +405,25 @@ function LoginForm() {
               <span className="text-xs font-bold text-navy uppercase tracking-wider block mb-2">
                 Quick Role Selector (Auto-fill)
               </span>
-              <button
-                type="button"
-                onClick={applySupplierPreset}
-                className={`w-full flex items-center justify-between rounded-xl p-2.5 text-xs font-semibold transition-all border ${
-                  email === SUPPLIER_PRESET.email
-                    ? "bg-navy text-white border-navy shadow"
-                    : "bg-white text-navy border-ocean/20 hover:border-navy/40"
-                }`}
-              >
-                <div className="text-left">
-                  <div className="font-bold">{SUPPLIER_PRESET.label}</div>
-                </div>
-                <span className={`text-[11px] ${email === SUPPLIER_PRESET.email ? "text-cyan" : "text-ocean"}`}>
-                  Restock requests & delivery
-                </span>
-              </button>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {SUPPLIER_PRESETS.map((item) => (
+                  <button
+                    key={item.email}
+                    type="button"
+                    onClick={() => applySupplierPreset(item)}
+                    className={`flex min-h-16 flex-col items-center justify-center rounded-xl border p-2 text-xs font-semibold transition-all ${
+                      email === item.email
+                        ? "border-navy bg-navy text-white shadow"
+                        : "border-ocean/20 bg-white text-navy hover:border-navy/40"
+                    }`}
+                  >
+                    <span className="font-bold">{item.label}</span>
+                    <span className={`mt-0.5 text-[10px] ${email === item.email ? "text-cyan" : "text-ocean"}`}>
+                      {item.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : null}
 
