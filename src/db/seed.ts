@@ -298,6 +298,7 @@ const SLOTS = [
 let seeding: Promise<void> | null = null;
 
 export async function ensureSeeded() {
+  if (!process.env.DATABASE_URL) return;
   try {
     if (!seeding) {
       seeding = seedIfNeeded().finally(() => {
