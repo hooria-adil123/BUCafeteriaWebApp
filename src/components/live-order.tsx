@@ -12,6 +12,10 @@ type Payload = {
     totalPkr: number;
     paymentMethod: string;
     createdAt: string;
+    acceptedAt?: string | null;
+    preparingAt?: string | null;
+    readyAt?: string | null;
+    pickedUpAt?: string | null;
     student?: { name: string; enrollmentId: string | null };
     slot?: { label: string };
     items: Array<{ name: string; quantity: number; unitPrice: number }>;
@@ -65,7 +69,16 @@ export function LiveOrderView({
   return (
     <>
       <div className="mt-6 no-print">
-        <OrderTracker status={order.status} />
+        <OrderTracker
+          status={order.status}
+          statusTimes={{
+            placed: order.createdAt,
+            accepted: order.acceptedAt,
+            preparing: order.preparingAt,
+            ready: order.readyAt,
+            picked_up: order.pickedUpAt,
+          }}
+        />
         <p className={`mt-2 text-right text-xs ${syncError ? "text-red-700" : "text-ocean"}`} role="status">
           {syncError ? "Live update unavailable. Retrying…" : `Last checked ${formatTime(lastUpdated)}`}
         </p>

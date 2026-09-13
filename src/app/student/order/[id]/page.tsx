@@ -55,6 +55,10 @@ export default async function StudentOrderPage({
           totalPkr: order.totalPkr,
           paymentMethod: order.paymentMethod,
           createdAt: order.createdAt.toISOString(),
+          acceptedAt: order.acceptedAt?.toISOString() ?? null,
+          preparingAt: order.preparingAt?.toISOString() ?? null,
+          readyAt: order.readyAt?.toISOString() ?? null,
+          pickedUpAt: order.pickedUpAt?.toISOString() ?? null,
           student: order.student
             ? { name: order.student.name, enrollmentId: order.student.enrollmentId }
             : undefined,

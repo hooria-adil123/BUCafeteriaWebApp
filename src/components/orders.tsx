@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   formatDateTime,
   formatPkr,
+  formatTime,
   ORDER_FLOW,
   STATUS_DESCRIPTIONS,
   STATUS_LABELS,
@@ -50,7 +51,15 @@ export function OrderCard({
   );
 }
 
-export function OrderTracker({ status }: { status: string }) {
+type OrderStatusTimes = Partial<Record<(typeof ORDER_FLOW)[number], Date | string | null>>;
+
+export function OrderTracker({
+  status,
+  statusTimes,
+}: {
+  status: string;
+  statusTimes?: OrderStatusTimes;
+}) {
   const current = statusIndex(status);
   const currentStatus = ORDER_FLOW[current];
   return (
@@ -82,6 +91,13 @@ export function OrderTracker({ status }: { status: string }) {
               </div>
               <p className={`mt-2 text-[11px] font-bold ${done ? "text-navy" : "text-ocean/60"}`}>
                 {STATUS_LABELS[step]}
+              </p>
+              <p className={`mt-1 text-[10px] ${done ? "text-ocean" : "text-ocean/45"}`}>
+                {statusTimes?.[step]
+                  ? formatTime(statusTimes[step]!)
+                  : done
+                    ? "Recorded"
+                    : "Waiting"}
               </p>
             </div>
           );
