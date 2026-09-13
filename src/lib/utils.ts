@@ -56,6 +56,14 @@ export const STATUS_LABELS: Record<string, string> = {
   picked_up: "Picked Up",
 };
 
+export const STATUS_DESCRIPTIONS: Record<string, string> = {
+  placed: "Your order is in the cafeteria queue.",
+  accepted: "The cafeteria has accepted your order.",
+  preparing: "Your meal is being prepared fresh.",
+  ready: "Your order is ready for pickup.",
+  picked_up: "Your order has been picked up. Enjoy your meal!",
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   student: "Student",
   staff: "Cafeteria Staff",
@@ -77,6 +85,11 @@ export function nextStatus(status: string) {
   const i = ORDER_FLOW.indexOf(status as OrderStatus);
   if (i < 0 || i >= ORDER_FLOW.length - 1) return null;
   return ORDER_FLOW[i + 1];
+}
+
+export function statusIndex(status: string) {
+  const index = ORDER_FLOW.indexOf(status as OrderStatus);
+  return index < 0 ? 0 : index;
 }
 
 export function minutesBetween(a: Date | null, b: Date | null) {

@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
-import { nextStatus } from "@/lib/utils";
+import { nextStatus, ORDER_FLOW } from "@/lib/utils";
+import { fallbackOrders } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -16,16 +17,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
   const { id } = await params;
   const body = (await request.json()) as { status?: string };
-  const [current] = await db
-    .select()
-    .from(orders)
-    .where(eq(orders.id, Number(id)))
-    .limit(1);
+  let current: typeof orders.$inferSelect | undefined;
+  try {
+    [current] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, Number(id)))
+      .limit(1);
+  } catch {
+    current = fallbackOrders.find((item) => item.id === Number(id));
+  }
+  if (!current) current = fallbackOrders.find((item) => item.id === Number(id));
   if (!current) return Response.json({ error: "Order not found." }, { status: 404 });
 
   const target = body.status || nextStatus(current.status);
-  if (!target) {
-    return Response.json({ error: "Order is already completed." }, { status: 400 });
+  const expected = nextStatus(current.status);
+  if (!target || !expected || !ORDER_FLOW.includes(target as (typeof ORDER_FLOW)[number]) || target !== expected) {
+    return Response.json({ error: "Orders must move through each stage in sequence." }, { status: 400 });
   }
 
   const now = new Date();
@@ -35,10 +43,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (target === "ready") patch.readyAt = now;
   if (target === "picked_up") patch.pickedUpAt = now;
 
-  const [order] = await db
-    .update(orders)
-    .set(patch)
-    .where(eq(orders.id, current.id))
-    .returning();
+  let order: typeof current;
+  try {
+    const [updated] = await db
+      .update(orders)
+      .set(patch)
+      .where(eq(orders.id, current.id))
+      .returning();
+    order = updated;
+  } catch {
+    const fallback = fallbackOrders.find((item) => item.id === current.id);
+    if (!fallback) return Response.json({ error: "Order not found." }, { status: 404 });
+    Object.assign(fallback, patch);
+    order = fallback;
+  }
   return Response.json({ order });
 }

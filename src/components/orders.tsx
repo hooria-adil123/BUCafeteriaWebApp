@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { formatDateTime, formatPkr, ORDER_FLOW, STATUS_LABELS } from "@/lib/utils";
+import {
+  formatDateTime,
+  formatPkr,
+  ORDER_FLOW,
+  STATUS_DESCRIPTIONS,
+  STATUS_LABELS,
+  statusIndex,
+} from "@/lib/utils";
 import { StatusBadge } from "@/components/ui";
 
 export function OrderCard({
@@ -44,19 +51,32 @@ export function OrderCard({
 }
 
 export function OrderTracker({ status }: { status: string }) {
-  const current = ORDER_FLOW.indexOf(status as (typeof ORDER_FLOW)[number]);
+  const current = statusIndex(status);
+  const currentStatus = ORDER_FLOW[current];
   return (
-    <div className="rounded-3xl bg-white p-5">
-      <p className="text-xs font-bold uppercase tracking-widest text-ocean">Live tracking</p>
-      <div className="mt-5 flex items-start justify-between gap-2">
+    <section className="rounded-3xl bg-white p-5" aria-label="Live order tracking">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-ocean">Live tracking</p>
+        <span className="inline-flex items-center gap-2 text-xs font-bold text-ocean">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-cyan" aria-hidden="true" />
+          Updates automatically
+        </span>
+      </div>
+      <div className="mt-5 flex items-start justify-between gap-2" role="list" aria-label="Order stages">
         {ORDER_FLOW.map((step, i) => {
           const done = i <= current;
+          const active = i === current;
           return (
-            <div key={step} className="flex flex-1 flex-col items-center text-center">
+            <div key={step} className="flex flex-1 flex-col items-center text-center" role="listitem">
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${
-                  done ? "bg-ocean text-white" : "bg-ice text-ocean"
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition ${
+                  active
+                    ? "bg-ocean text-white ring-4 ring-cyan/20"
+                    : done
+                      ? "bg-ocean text-white"
+                      : "bg-ice text-ocean"
                 }`}
+                aria-current={active ? "step" : undefined}
               >
                 {i + 1}
               </div>
@@ -73,7 +93,11 @@ export function OrderTracker({ status }: { status: string }) {
           style={{ width: `${((current + 1) / ORDER_FLOW.length) * 100}%` }}
         />
       </div>
-    </div>
+      <div className="mt-4 rounded-2xl bg-ice/60 px-4 py-3">
+        <p className="text-sm font-bold text-navy">{STATUS_LABELS[currentStatus]}</p>
+        <p className="mt-1 text-sm text-ocean">{STATUS_DESCRIPTIONS[currentStatus]}</p>
+      </div>
+    </section>
   );
 }
 
