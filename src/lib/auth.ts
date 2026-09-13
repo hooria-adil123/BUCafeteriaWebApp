@@ -3,16 +3,22 @@ import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { sessions, users, type User } from "@/db/schema";
+import { sessions, users, type Order, type OrderItem, type PickupSlot, type User } from "@/db/schema";
 import { hashPassword, newId } from "@/lib/utils";
 import { fallbackSessions, fallbackUsers, getFallbackUserBySession } from "@/lib/store";
 
 export const SESSION_COOKIE = "bu_session";
+export const ORDER_COOKIE = "bu_latest_order";
 const WEEK = 60 * 60 * 24 * 7;
 const FALLBACK_SESSION_SECRET =
   process.env.SESSION_SECRET ?? "bu-cafeteria-development-session-secret";
 
 export type AuthUser = Omit<User, "passwordHash">;
+export type CachedOrder = Order & {
+  items: OrderItem[];
+  student?: AuthUser | null;
+  slot?: PickupSlot | null;
+};
 
 function publicUser(user: User): AuthUser {
   const { passwordHash: _pw, ...rest } = user;
@@ -81,6 +87,26 @@ function getStatelessFallbackUser(token: string) {
 export function withSessionCookie(response: NextResponse, sessionId: string) {
   response.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions());
   return response;
+}
+
+export function createSignedOrderCookie(order: CachedOrder) {
+  const payload = Buffer.from(JSON.stringify(order)).toString("base64url");
+  const signature = createHmac("sha256", FALLBACK_SESSION_SECRET).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+export function readSignedOrderCookie(token: string): CachedOrder | null {
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return null;
+  const expected = createHmac("sha256", FALLBACK_SESSION_SECRET).update(payload).digest();
+  const received = Buffer.from(signature, "base64url");
+  if (received.length !== expected.length || !timingSafeEqual(received, expected)) return null;
+  try {
+    const order = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as CachedOrder;
+    return { ...order, createdAt: new Date(order.createdAt) };
+  } catch {
+    return null;
+  }
 }
 
 export function clearSessionCookie(response: NextResponse) {

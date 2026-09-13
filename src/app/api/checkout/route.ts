@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { cartItems, menuItems, orderItems, orders, pickupSlots, users } from "@/db/schema";
-import { requireUser } from "@/lib/auth";
+import { createSignedOrderCookie, ORDER_COOKIE, requireUser } from "@/lib/auth";
 import { getCart, getSlotsWithUsage, nextOrderNumber } from "@/lib/data";
 import { startOfToday } from "@/lib/utils";
 import { and, count, gte } from "drizzle-orm";
@@ -177,7 +178,28 @@ export async function POST(request: Request) {
     fallbackCarts.delete(user.id);
   }
 
-  return Response.json({ order, slot });
+  const cachedOrder = {
+    ...order!,
+    items: cart.map((row) => ({
+      id: row.id,
+      orderId: order!.id,
+      menuItemId: row.menuItem.id,
+      name: row.menuItem.name,
+      unitPrice: row.menuItem.pricePkr,
+      quantity: row.quantity,
+    })),
+    student: user,
+    slot,
+  };
+  const response = NextResponse.json({ order, slot });
+  response.cookies.set(ORDER_COOKIE, createSignedOrderCookie(cachedOrder), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 10,
+  });
+  return response;
 }
 
 export async function GET() {

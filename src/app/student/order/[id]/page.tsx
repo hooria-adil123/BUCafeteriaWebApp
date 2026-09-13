@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, ORDER_COOKIE, readSignedOrderCookie } from "@/lib/auth";
 import { getOrderWithItems } from "@/lib/data";
 import { Notice } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
@@ -19,7 +20,12 @@ export default async function StudentOrderPage({
   if (!user) redirect("/login");
   const { id } = await params;
   const { confirmed } = await searchParams;
-  const order = await getOrderWithItems(Number(id));
+  const orderId = Number(id);
+  const databaseOrder = await getOrderWithItems(orderId);
+  const cachedOrder = readSignedOrderCookie((await cookies()).get(ORDER_COOKIE)?.value ?? "");
+  const order =
+    databaseOrder ??
+    (cachedOrder && cachedOrder.id === orderId && cachedOrder.studentId === user.id ? cachedOrder : null);
   if (!order || order.studentId !== user.id) notFound();
 
   return (
