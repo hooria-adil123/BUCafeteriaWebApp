@@ -29,8 +29,11 @@ export async function PATCH(request: Request) {
     patch.email = body.email.trim().toLowerCase();
   }
   if (body.newPassword) {
-    if (!body.currentPassword || !checkPassword(body.currentPassword, full.passwordHash)) {
+    if (!body.currentPassword || !(await checkPassword(body.currentPassword, full.passwordHash))) {
       return Response.json({ error: "Current password is incorrect." }, { status: 400 });
+    }
+    if (body.newPassword.length < 10) {
+      return Response.json({ error: "Password must be at least 10 characters." }, { status: 400 });
     }
     patch.passwordHash = hashPassword(body.newPassword);
   }

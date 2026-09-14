@@ -9,7 +9,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export const HOURS_MODE_COOKIE = "bu_cafe_hours_mode";
+const HOURS_MODE_COOKIE = "bu_cafe_hours_mode";
 
 export async function GET() {
   const cookieStore = await cookies();

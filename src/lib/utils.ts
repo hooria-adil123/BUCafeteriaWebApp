@@ -1,7 +1,12 @@
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 
 export function hashPassword(password: string) {
-  return createHash("sha256").update(`bu-cafe-v1:${password}`).digest("hex");
+  return bcrypt.hashSync(password, 12);
+}
+
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
 }
 
 export function newId() {

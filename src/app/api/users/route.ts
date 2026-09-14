@@ -47,8 +47,11 @@ export async function POST(request: Request) {
     role?: string;
     walletBalance?: number;
   };
-  if (!body.name || !body.email || !body.password || !body.role) {
+  if (!body.name || !body.email || !body.password || !body.role || !["student", "staff", "manager", "admin", "supplier"].includes(body.role)) {
     return Response.json({ error: "Please fill in all required fields." }, { status: 400 });
+  }
+  if (body.password.length < 10) {
+    return Response.json({ error: "Password must be at least 10 characters." }, { status: 400 });
   }
   const [created] = await db
     .insert(users)

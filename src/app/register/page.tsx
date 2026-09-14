@@ -5,7 +5,16 @@ import { useState, type FormEvent } from "react";
 import { UniversityCrest } from "@/components/crest";
 import { Notice } from "@/components/ui";
 
+type AccountRole = "student" | "staff" | "supplier";
+
+const ACCOUNT_TYPES: { role: AccountRole; label: string; description: string }[] = [
+  { role: "student", label: "Student", description: "Order meals and manage your wallet" },
+  { role: "staff", label: "Staff member", description: "Manage cafeteria operations" },
+  { role: "supplier", label: "Food supplier", description: "Manage deliveries and requests" },
+];
+
 export default function RegisterPage() {
+  const [role, setRole] = useState<AccountRole>("student");
   const [name, setName] = useState("");
   const [enrollmentId, setEnrollmentId] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +31,7 @@ export default function RegisterPage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, enrollmentId, email, password }),
+        body: JSON.stringify({ role, name, enrollmentId, email, password }),
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -30,7 +39,7 @@ export default function RegisterPage() {
         setBusy(false);
         return;
       }
-      window.location.assign("/student/dashboard");
+      window.location.assign(role === "student" ? "/student/dashboard" : role === "supplier" ? "/supplier/dashboard" : "/admin/dashboard");
     } catch {
       setError("Unable to register right now. Please try again.");
       setBusy(false);
@@ -43,11 +52,30 @@ export default function RegisterPage() {
         <div className="flex justify-center">
           <UniversityCrest height={210} />
         </div>
-        <h1 className="mt-6 font-display text-3xl text-navy">Student registration</h1>
+        <h1 className="mt-6 font-display text-3xl text-navy">Create your account</h1>
         <p className="mt-2 text-sm text-ocean">
-          Use your Bahria University name and enrollment ID. New wallets start with Rs. 2,000.
+          Register for the portal that matches your role at Bahria University Cafeteria.
         </p>
         <div className="mt-5 space-y-3">
+          <div className="grid gap-2 sm:grid-cols-3">
+            {ACCOUNT_TYPES.map((account) => (
+              <button
+                key={account.role}
+                type="button"
+                onClick={() => setRole(account.role)}
+                className={`rounded-2xl border p-3 text-left transition-colors ${
+                  role === account.role
+                    ? "border-navy bg-navy text-white shadow"
+                    : "border-ocean/20 bg-ice text-navy hover:border-navy/40"
+                }`}
+              >
+                <span className="block text-sm font-bold">{account.label}</span>
+                <span className={`mt-1 block text-xs ${role === account.role ? "text-cyan" : "text-ocean"}`}>
+                  {account.description}
+                </span>
+              </button>
+            ))}
+          </div>
           <input
             className="input"
             placeholder="Full name"
@@ -56,14 +84,16 @@ export default function RegisterPage() {
             autoComplete="name"
             required
           />
-          <input
-            className="input"
-            placeholder="Enrollment ID"
-            value={enrollmentId}
-            onChange={(e) => setEnrollmentId(e.target.value)}
-            autoComplete="username"
-            required
-          />
+          {role === "student" ? (
+            <input
+              className="input"
+              placeholder="Enrollment ID"
+              value={enrollmentId}
+              onChange={(e) => setEnrollmentId(e.target.value)}
+              autoComplete="username"
+              required
+            />
+          ) : null}
           <input
             className="input"
             type="email"

@@ -34,6 +34,13 @@ export const sessions = pgTable("sessions", {
   expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
 });
 
+export const userActivity = pgTable("user_activity", {
+  userId: integer("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  lastLoginAt: timestamp("last_login_at"),
+});
+
 export const menuItems = pgTable("menu_items", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

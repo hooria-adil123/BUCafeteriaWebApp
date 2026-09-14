@@ -10,10 +10,12 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const { user } = await requireUser();
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  }
   const cookieStore = await cookies();
 
-  // If user is authenticated, clear for them; otherwise clear all
-  const userId = user?.id ?? 100;
+  const userId = user.id;
 
   try {
     // Database cleanup if available
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
 
   // Fallback memory & file store cleanup
   clearOrdersForUser(userId);
-  if (user?.role === "admin" || !user) {
+  if (user.role === "admin") {
     clearAllOrders();
   }
 

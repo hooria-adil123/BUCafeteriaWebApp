@@ -24,7 +24,7 @@ export default function UsersPage() {
     name: "",
     email: "",
     enrollmentId: "",
-    password: "1234",
+    password: "",
     role: "staff",
     walletBalance: 0,
   });
@@ -133,6 +133,7 @@ export default function UsersPage() {
           <input
             className="input"
             placeholder="Password"
+            type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />

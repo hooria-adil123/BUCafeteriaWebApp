@@ -28,6 +28,9 @@ export default async function AdminDashboard() {
         <Link href="/admin/orders" className="btn-primary mt-6">
           Open order queue
         </Link>
+        <Link href="/admin/students" className="btn-ghost mt-3 ml-2">
+          View student contacts
+        </Link>
       </main>
     );
   }
@@ -82,6 +85,9 @@ export default async function AdminDashboard() {
             ["/admin/pickup-slots", "Manage pickup slots"],
             ["/admin/reports", "View reports"],
             ["/admin/orders", "View orders"],
+            ["/admin/team", "View operations team"],
+            ["/admin/students", "View student contacts"],
+            ["/admin/deliveries", "View supplier deliveries"],
           ].map(([href, label]) => (
             <Link key={label} href={href} className="rounded-2xl bg-white px-4 py-5 font-bold text-navy shadow-sm">
               {label} →

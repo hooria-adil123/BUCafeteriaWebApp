@@ -112,6 +112,9 @@ export function AdminSidebar({
     { href: "/admin/menu", label: "Menu", roles: ["manager"] },
     { href: "/admin/pickup-slots", label: "Pickup slots", roles: ["manager"] },
     { href: "/admin/reports", label: "Reports", roles: ["manager", "admin"] },
+    { href: "/admin/team", label: "Operations team", roles: ["manager", "admin"] },
+    { href: "/admin/deliveries", label: "Supplier deliveries", roles: ["admin"] },
+    { href: "/admin/students", label: "Student contacts", roles: ["staff", "manager", "admin"] },
     { href: "/admin/users", label: "Users & roles", roles: ["admin"] },
   ];
   const links = all.filter((l) => l.roles.includes(role));
