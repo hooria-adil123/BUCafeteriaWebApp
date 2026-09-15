@@ -5,11 +5,13 @@ import { useState, type FormEvent } from "react";
 import { UniversityCrest } from "@/components/crest";
 import { Notice } from "@/components/ui";
 
-type AccountRole = "student" | "staff" | "supplier";
+type AccountRole = "student" | "staff" | "manager" | "admin" | "supplier";
 
 const ACCOUNT_TYPES: { role: AccountRole; label: string; description: string }[] = [
   { role: "student", label: "Student", description: "Order meals and manage your wallet" },
-  { role: "staff", label: "Staff member", description: "Manage cafeteria operations" },
+  { role: "staff", label: "Staff", description: "Handle daily cafeteria operations" },
+  { role: "manager", label: "Manager", description: "Manage menus, slots and reports" },
+  { role: "admin", label: "Administration", description: "Manage users and university operations" },
   { role: "supplier", label: "Food supplier", description: "Manage deliveries and requests" },
 ];
 
@@ -57,7 +59,7 @@ export default function RegisterPage() {
           Register for the portal that matches your role at Bahria University Cafeteria.
         </p>
         <div className="mt-5 space-y-3">
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {ACCOUNT_TYPES.map((account) => (
               <button
                 key={account.role}

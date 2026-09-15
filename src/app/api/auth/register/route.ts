@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const password = body.password ?? "";
   const role = body.role ?? "student";
 
-  if (!name || !email || !password || !["student", "staff", "supplier"].includes(role)) {
+  if (!name || !email || !password || !["student", "staff", "manager", "admin", "supplier"].includes(role)) {
     return NextResponse.json({ error: "Please fill in all required fields." }, { status: 400 });
   }
   if (role === "student" && !enrollmentId) {
