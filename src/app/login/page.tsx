@@ -65,7 +65,7 @@ function LoginForm() {
           <h1 className="mt-6 font-display text-4xl">Bahria University Cafeteria</h1>
           <p className="mt-3 max-w-md text-ice">Sign in with the email and password for your own registered account.</p>
         </div>
-        <form onSubmit={submit} className="rounded-3xl bg-white p-6 shadow-2xl md:p-8">
+        <form onSubmit={submit} autoComplete="off" className="rounded-3xl bg-white p-6 shadow-2xl md:p-8">
           <div className="grid grid-cols-3 gap-2 rounded-2xl bg-ice p-1">
             {(["student", "admin", "supplier"] as Portal[]).map((item) => (
               <button
@@ -102,12 +102,12 @@ function LoginForm() {
           <div className="mt-5 space-y-3">
             <label className="block text-sm font-bold text-navy">
               Email
-              <input className="input mt-1 w-full" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+              <input className="input mt-1 w-full" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" required />
             </label>
             <label className="block text-sm font-bold text-navy">
               Password
               <div className="relative mt-1">
-                <input className="input w-full pr-10" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+                <input className="input w-full pr-10" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
                 <button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3 top-1/2 -translate-y-1/2 px-1 py-0.5 text-xs font-semibold text-ocean" title={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? "Hide" : "Show"}
                 </button>

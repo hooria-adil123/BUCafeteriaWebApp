@@ -50,7 +50,7 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(160deg,#03045e,#00b4d8)] px-4 py-12">
-      <form onSubmit={submit} className="mx-auto max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
+      <form onSubmit={submit} autoComplete="off" className="mx-auto max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
         <div className="flex justify-center">
           <UniversityCrest height={210} />
         </div>
@@ -102,7 +102,7 @@ export default function RegisterPage() {
             placeholder="University email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
+            autoComplete="off"
             required
           />
           <input
