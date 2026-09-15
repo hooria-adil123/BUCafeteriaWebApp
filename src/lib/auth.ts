@@ -1,16 +1,16 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { sessions, users, type Order, type OrderItem, type PickupSlot, type User } from "@/db/schema";
 import { newId, verifyPassword } from "@/lib/utils";
-import { createFallbackSession, fallbackSessions, fallbackUsers, getFallbackUserBySession } from "@/lib/store";
+import { fallbackSessions, fallbackUsers, getFallbackUserBySession } from "@/lib/store";
 
 export const SESSION_COOKIE = "bu_session";
 export const ORDER_COOKIE = "bu_latest_order";
 const SESSION_TTL = 60 * 15;
-const FALLBACK_SESSION_SECRET = process.env.SESSION_SECRET ?? randomBytes(32).toString("hex");
+const FALLBACK_SESSION_SECRET = process.env.SESSION_SECRET ?? "bu-cafeteria-development-session-secret";
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
 export type AuthUser = Omit<User, "passwordHash">;
@@ -48,10 +48,30 @@ export async function createSession(userId: number) {
     console.warn("Database not available for session insert:", (err as Error).message);
   }
   if (!databaseSessionCreated) {
-    return createFallbackSession(userId, expiresAt);
+    return createSignedFallbackSession(userId, expiresAt);
   }
   fallbackSessions.set(id, { userId, expiresAt });
   return id;
+}
+
+function createSignedFallbackSession(userId: number, expiresAt: Date) {
+  const payload = `${userId}.${expiresAt.getTime()}`;
+  const signature = createHmac("sha256", FALLBACK_SESSION_SECRET).update(payload).digest("base64url");
+  return `fallback.${Buffer.from(payload).toString("base64url")}.${signature}`;
+}
+
+function readSignedFallbackSession(token: string) {
+  const [, encodedPayload, signature] = token.split(".");
+  if (!encodedPayload || !signature) return null;
+  const payload = Buffer.from(encodedPayload, "base64url").toString("utf8");
+  const expected = createHmac("sha256", FALLBACK_SESSION_SECRET).update(payload).digest();
+  const received = Buffer.from(signature, "base64url");
+  if (received.length !== expected.length || !timingSafeEqual(received, expected)) return null;
+  const [userIdValue, expiresAtValue] = payload.split(".");
+  const userId = Number(userIdValue);
+  const expiresAt = Number(expiresAtValue);
+  if (!Number.isInteger(userId) || !Number.isFinite(expiresAt) || expiresAt < Date.now()) return null;
+  return { userId, expiresAt };
 }
 
 export function withSessionCookie(response: NextResponse, sessionId: string) {
@@ -130,6 +150,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
   const fallback = getFallbackUserBySession(token);
   if (fallback) return publicUser(fallback);
+
+  const signedFallback = readSignedFallbackSession(token);
+  if (signedFallback) {
+    const signedUser = fallbackUsers.find((user) => user.id === signedFallback.userId);
+    if (signedUser) return publicUser(signedUser);
+  }
 
   return null;
 }
