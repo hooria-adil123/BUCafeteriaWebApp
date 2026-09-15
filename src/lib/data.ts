@@ -24,7 +24,8 @@ import {
 
 export async function getMenu() {
   try {
-    return await db.select().from(menuItems).orderBy(asc(menuItems.id));
+    const items = await db.select().from(menuItems).orderBy(asc(menuItems.id));
+    return items.length > 0 ? items : FALLBACK_MENU;
   } catch {
     return FALLBACK_MENU;
   }

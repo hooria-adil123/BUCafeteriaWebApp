@@ -294,7 +294,22 @@ interface PersistedData {
 }
 
 function loadPersistedData(): PersistedData {
-  return { users: [], sessions: [], carts: [], orders: [] };
+  try {
+    if (!fs.existsSync(STORE_FILE)) {
+      return { users: [], sessions: [], carts: [], orders: [] };
+    }
+
+    const stored = JSON.parse(fs.readFileSync(STORE_FILE, "utf-8")) as Partial<PersistedData>;
+    return {
+      users: Array.isArray(stored.users) ? stored.users : [],
+      sessions: Array.isArray(stored.sessions) ? stored.sessions : [],
+      carts: Array.isArray(stored.carts) ? stored.carts : [],
+      orders: Array.isArray(stored.orders) ? stored.orders : [],
+    };
+  } catch (err) {
+    console.warn("Could not load cafeteria_store.json:", (err as Error).message);
+    return { users: [], sessions: [], carts: [], orders: [] };
+  }
 }
 
 export function savePersistedData(data?: PersistedData) {

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { cartItems, menuItems } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { getCart } from "@/lib/data";
-import { FALLBACK_MENU, fallbackCarts } from "@/lib/store";
+import { FALLBACK_MENU, fallbackCarts, savePersistedData } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,10 @@ export async function POST(request: Request) {
 
   try {
     const [item] = await db.select().from(menuItems).where(eq(menuItems.id, menuItemId)).limit(1);
-    if (!item || !item.available || item.stockCount <= 0) {
+    if (!item) {
+      throw new Error("Menu item not found in database");
+    }
+    if (!item.available || item.stockCount <= 0) {
       return Response.json({ error: "This item is currently unavailable." }, { status: 400 });
     }
 
@@ -65,6 +68,7 @@ export async function POST(request: Request) {
       userCart.push({ id: Date.now(), quantity, menuItem: item });
     }
     fallbackCarts.set(user.id, userCart);
+    savePersistedData();
   }
 
   const items = await getCart(user.id);

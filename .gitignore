@@ -11,3 +11,4 @@ pnpm-debug.log*
 *.key
 *.pem
 .vercel
+data/
