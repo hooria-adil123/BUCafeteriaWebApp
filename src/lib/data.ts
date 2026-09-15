@@ -33,7 +33,7 @@ export async function getMenu() {
 
 export async function getCart(userId: number) {
   try {
-    return await db
+    const items = await db
       .select({
         id: cartItems.id,
         quantity: cartItems.quantity,
@@ -42,6 +42,7 @@ export async function getCart(userId: number) {
       .from(cartItems)
       .innerJoin(menuItems, eq(cartItems.menuItemId, menuItems.id))
       .where(eq(cartItems.userId, userId));
+    return items.length > 0 ? items : fallbackCarts.get(userId) ?? [];
   } catch {
     return fallbackCarts.get(userId) ?? [];
   }
