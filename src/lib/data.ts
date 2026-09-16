@@ -131,6 +131,22 @@ export async function listOrders(filters?: { studentId?: number; status?: string
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(orders.createdAt));
 
+    if (rows.length === 0 && fallbackOrders.length > 0) {
+      let filtered = [...fallbackOrders];
+      if (filters?.studentId) filtered = filtered.filter((o) => o.studentId === filters.studentId);
+      if (filters?.status) filtered = filtered.filter((o) => o.status === filters.status);
+      return filtered.map((o) => {
+        const student = fallbackUsers.find((u) => u.id === o.studentId) ?? o.student;
+        return {
+          ...o,
+          studentName: student?.name ?? "Student",
+          enrollmentId: student?.enrollmentId ?? "",
+          slotLabel: o.slot?.label ?? "Pickup Slot",
+          items: o.items ?? [],
+        };
+      });
+    }
+
     const ids = rows.map((r) => r.order.id);
     const items =
       ids.length === 0
