@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useState, type CSSProperties, type FormEvent } from "react";
 import { UniversityCrest } from "@/components/crest";
 import { Notice } from "@/components/ui";
 
@@ -102,12 +102,12 @@ function LoginForm() {
           <div className="mt-5 space-y-3">
             <label className="block text-sm font-bold text-navy">
               Email
-              <input className="input mt-1 w-full" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" required />
+              <input className="input mt-1 w-full" type="text" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" required />
             </label>
             <label className="block text-sm font-bold text-navy">
               Password
               <div className="relative mt-1">
-                <input className="input w-full pr-10" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
+                <input className="input w-full pr-10" type="text" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="off" data-1p-ignore="true" data-bwignore="true" data-lpignore="true" style={showPassword ? undefined : ({ WebkitTextSecurity: "disc" } as CSSProperties)} required />
                 <button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3 top-1/2 -translate-y-1/2 px-1 py-0.5 text-xs font-semibold text-ocean" title={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? "Hide" : "Show"}
                 </button>

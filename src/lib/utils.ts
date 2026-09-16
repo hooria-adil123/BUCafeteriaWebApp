@@ -42,12 +42,13 @@ export function formatTime(value: Date | string) {
 export const ORDER_PLACEMENT_WINDOW = "8:30 AM – 5:30 PM";
 export const CAFE_OPEN_MINUTES = 8 * 60 + 30; // 510 minutes -> 8:30 AM
 export const CAFE_CLOSE_MINUTES = 17 * 60 + 30; // 1050 minutes -> 5:30 PM
+export const CAFE_TIME_ZONE = process.env.CAFE_TIME_ZONE ?? "America/Los_Angeles";
 
 export type CafeHoursMode = "auto" | "open" | "closed";
 
-export function getKarachiMinutes(value = new Date()) {
+export function getCafeTimeMinutes(value = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Karachi",
+    timeZone: CAFE_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -69,7 +70,7 @@ export function isWithinOrderPlacementHours(
     if (process.env.NEXT_PUBLIC_FORCE_CAFE_HOURS === "closed") return false;
   }
 
-  const currentMinutes = getKarachiMinutes(value);
+  const currentMinutes = getCafeTimeMinutes(value);
   return currentMinutes >= CAFE_OPEN_MINUTES && currentMinutes < CAFE_CLOSE_MINUTES;
 }
 

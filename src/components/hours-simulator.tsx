@@ -70,7 +70,7 @@ export function HoursSimulator() {
                 ? "bg-navy text-white shadow-xs"
                 : "bg-white text-navy hover:bg-sky/50"
             }`}
-            title="Use real campus clock (8:30 AM – 5:30 PM PKT)"
+            title="Use the configured cafeteria clock (8:30 AM – 5:30 PM)"
           >
             Live Clock
           </button>
