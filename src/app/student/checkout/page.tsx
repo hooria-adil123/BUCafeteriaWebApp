@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [orderPlacementOpen, setOrderPlacementOpen] = useState(false);
-  const [orderPlacementWindow, setOrderPlacementWindow] = useState("8:30 AM – 5:30 PM");
+  const [orderPlacementWindow, setOrderPlacementWindow] = useState("8:30 AM – 5:20 PM");
 
   useEffect(() => {
     fetch("/api/checkout")
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
         setSlots(d.slots ?? []);
         setUser(d.user ?? null);
         setOrderPlacementOpen(d.orderPlacementOpen ?? false);
-        setOrderPlacementWindow(d.orderPlacementWindow ?? "8:30 AM – 5:30 PM");
+        setOrderPlacementWindow(d.orderPlacementWindow ?? "8:30 AM – 5:20 PM");
       })
       .finally(() => setLoading(false));
   }, []);

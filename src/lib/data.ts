@@ -90,7 +90,12 @@ export async function getOrderWithItems(
 ): Promise<(Order & { items: OrderItem[]; student?: User | null; slot?: PickupSlot | null }) | null> {
   try {
     const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-    if (!order) return null;
+    if (!order) {
+      const found = fallbackOrders.find((o) => o.id === orderId);
+      if (!found) return null;
+      const student = fallbackUsers.find((u) => u.id === found.studentId) ?? found.student ?? null;
+      return { ...found, student, slot: found.slot ?? null };
+    }
     const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
     const [student] = await db.select().from(users).where(eq(users.id, order.studentId)).limit(1);
     const [slot] = await db

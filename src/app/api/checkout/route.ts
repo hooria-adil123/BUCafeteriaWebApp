@@ -4,8 +4,7 @@ import { db } from "@/db";
 import { cartItems, menuItems, orderItems, orders, pickupSlots, users } from "@/db/schema";
 import { createSignedOrderCookie, ORDER_COOKIE, requireUser } from "@/lib/auth";
 import { getCart, getSlotsWithUsage, nextOrderNumber } from "@/lib/data";
-import { cookies } from "next/headers";
-import { isWithinOrderPlacementHours, ORDER_PLACEMENT_WINDOW, startOfToday, type CafeHoursMode } from "@/lib/utils";
+import { isWithinOrderPlacementHours, ORDER_PLACEMENT_WINDOW, startOfToday } from "@/lib/utils";
 import { and, count, gte } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -19,12 +18,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const cookieStore = await cookies();
-  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
-  const overrideMode: CafeHoursMode | null =
-    rawMode === "open" || rawMode === "closed" ? rawMode : null;
-
-  if (!isWithinOrderPlacementHours(new Date(), overrideMode)) {
+  if (!isWithinOrderPlacementHours(new Date())) {
     return Response.json(
       {
         error: `The cafeteria has been closed. Orders can only be placed between ${ORDER_PLACEMENT_WINDOW}.`,
@@ -59,7 +53,12 @@ export async function POST(request: Request) {
   let slot: typeof pickupSlots.$inferSelect | undefined;
   try {
     const [dbSlot] = await db.select().from(pickupSlots).where(eq(pickupSlots.id, slotId)).limit(1);
-    slot = dbSlot;
+    if (dbSlot) {
+      slot = dbSlot;
+    } else {
+      const { FALLBACK_SLOTS } = await import("@/lib/store");
+      slot = FALLBACK_SLOTS.find((s) => s.id === slotId);
+    }
   } catch {
     const { FALLBACK_SLOTS } = await import("@/lib/store");
     slot = FALLBACK_SLOTS.find((s) => s.id === slotId);
@@ -228,15 +227,10 @@ export async function GET() {
       { status: 403 },
     );
   }
-  const cookieStore = await cookies();
-  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
-  const overrideMode: CafeHoursMode | null =
-    rawMode === "open" || rawMode === "closed" ? rawMode : null;
-
   const cart = await getCart(user.id);
   const slots = await getSlotsWithUsage();
   const total = cart.reduce((s, i) => s + i.menuItem.pricePkr * i.quantity, 0);
-  const open = isWithinOrderPlacementHours(new Date(), overrideMode);
+  const open = isWithinOrderPlacementHours(new Date());
 
   return Response.json({
     cart,

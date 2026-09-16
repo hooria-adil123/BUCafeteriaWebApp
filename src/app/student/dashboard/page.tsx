@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { and, desc, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { menuItems, orders, pickupSlots } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
-import { formatPkr, getCafeteriaStatus, type CafeHoursMode } from "@/lib/utils";
+import { formatPkr, getCafeteriaStatus } from "@/lib/utils";
 import { FoodCard } from "@/components/food";
 import { OrderTracker } from "@/components/orders";
 import { DashboardCard } from "@/components/ui";
@@ -15,17 +14,14 @@ export default async function StudentDashboard() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const cookieStore = await cookies();
-  const rawMode = cookieStore.get("bu_cafe_hours_mode")?.value;
-  const overrideMode: CafeHoursMode | null =
-    rawMode === "open" || rawMode === "closed" ? rawMode : null;
-  const status = getCafeteriaStatus(new Date(), overrideMode);
+  const status = getCafeteriaStatus(new Date());
 
   let currentRows: { order: typeof orders.$inferSelect; slot: typeof pickupSlots.$inferSelect }[] = [];
   let popular: (typeof menuItems.$inferSelect)[] = [];
   let available: (typeof menuItems.$inferSelect)[] = [];
 
   try {
+    const { FALLBACK_MENU } = await import("@/lib/store");
     currentRows = await db
       .select({ order: orders, slot: pickupSlots })
       .from(orders)
@@ -33,8 +29,10 @@ export default async function StudentDashboard() {
       .where(and(eq(orders.studentId, user.id), ne(orders.status, "picked_up")))
       .orderBy(desc(orders.createdAt))
       .limit(1);
-    popular = await db.select().from(menuItems).where(eq(menuItems.popular, true)).limit(4);
-    available = await db.select().from(menuItems).where(eq(menuItems.available, true)).limit(8);
+    const dbPopular = await db.select().from(menuItems).where(eq(menuItems.popular, true)).limit(4);
+    const dbAvailable = await db.select().from(menuItems).where(eq(menuItems.available, true)).limit(8);
+    popular = dbPopular.length > 0 ? dbPopular : FALLBACK_MENU.filter((m) => m.popular).slice(0, 4);
+    available = dbAvailable.length > 0 ? dbAvailable : FALLBACK_MENU.filter((m) => m.available).slice(0, 8);
   } catch {
     const { FALLBACK_MENU, fallbackOrders } = await import("@/lib/store");
     popular = FALLBACK_MENU.filter((m) => m.popular).slice(0, 4);
@@ -68,7 +66,7 @@ export default async function StudentDashboard() {
         />
         <DashboardCard
           label="Order hours"
-          value="8:30 AM – 5:30 PM"
+          value="8:30 AM – 5:20 PM"
           hint={status.isOpen ? "🟢 Open for orders · Mon–Sat" : "🔴 Closed for orders · Mon–Sat"}
           accent={status.isOpen}
         />
