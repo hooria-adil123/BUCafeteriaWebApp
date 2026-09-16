@@ -59,6 +59,15 @@ export async function todaySlotUsage() {
       .from(orders)
       .where(gte(orders.createdAt, start))
       .groupBy(orders.pickupSlotId);
+    if (rows.length === 0 && fallbackOrders.length > 0) {
+      const fallbackUsage = new Map<number, number>();
+      for (const order of fallbackOrders) {
+        if (order.createdAt >= start) {
+          fallbackUsage.set(order.pickupSlotId, (fallbackUsage.get(order.pickupSlotId) ?? 0) + 1);
+        }
+      }
+      return Object.fromEntries(fallbackUsage);
+    }
     return Object.fromEntries(rows.map((r) => [r.pickupSlotId, Number(r.booked)]));
   } catch {
     return {};
@@ -188,13 +197,18 @@ export async function getDashboardStats() {
     const start = startOfToday();
     const todayOrders = await db.select().from(orders).where(gte(orders.createdAt, start));
     const allOrders = await db.select().from(orders);
+    const useFallbackOrders = allOrders.length === 0 && fallbackOrders.length > 0;
+    const statsOrders = useFallbackOrders ? fallbackOrders : allOrders;
+    const statsTodayOrders = useFallbackOrders
+      ? fallbackOrders.filter((order) => order.createdAt >= start)
+      : todayOrders;
     const students = await db.select().from(users).where(eq(users.role, "student"));
     const menu = await db.select().from(menuItems);
     const slots = await getSlotsWithUsage();
 
-    const salesToday = todayOrders.reduce((s, o) => s + o.totalPkr, 0);
-    const pending = todayOrders.filter((o) => o.status === "placed" || o.status === "accepted").length;
-    const completed = todayOrders.filter((o) => o.status === "picked_up");
+    const salesToday = statsTodayOrders.reduce((s, o) => s + o.totalPkr, 0);
+    const pending = statsTodayOrders.filter((o) => o.status === "placed" || o.status === "accepted").length;
+    const completed = statsTodayOrders.filter((o) => o.status === "picked_up");
 
     const durations = completed
       .map((o) => {
@@ -208,9 +222,10 @@ export async function getDashboardStats() {
         : Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
 
     const itemCounts = new Map<string, number>();
-    const todayIds = todayOrders.map((o) => o.id);
-    const items =
-      todayIds.length === 0
+    const todayIds = statsTodayOrders.map((o) => o.id);
+    const items = useFallbackOrders
+      ? statsTodayOrders.flatMap((order) => (order as (typeof fallbackOrders)[number]).items ?? [])
+      : todayIds.length === 0
         ? []
         : await db.select().from(orderItems).where(inArray(orderItems.orderId, todayIds));
     for (const item of items) {
@@ -225,11 +240,11 @@ export async function getDashboardStats() {
     const outOfStock = menu.filter((m) => !m.available || m.stockCount <= 0);
 
     const statusCounts = {
-      placed: todayOrders.filter((o) => o.status === "placed").length,
-      accepted: todayOrders.filter((o) => o.status === "accepted").length,
-      preparing: todayOrders.filter((o) => o.status === "preparing").length,
-      ready: todayOrders.filter((o) => o.status === "ready").length,
-      picked_up: todayOrders.filter((o) => o.status === "picked_up").length,
+      placed: statsTodayOrders.filter((o) => o.status === "placed").length,
+      accepted: statsTodayOrders.filter((o) => o.status === "accepted").length,
+      preparing: statsTodayOrders.filter((o) => o.status === "preparing").length,
+      ready: statsTodayOrders.filter((o) => o.status === "ready").length,
+      picked_up: statsTodayOrders.filter((o) => o.status === "picked_up").length,
     };
 
     const restockPending = await db
@@ -238,7 +253,7 @@ export async function getDashboardStats() {
       .where(eq(restockRequests.status, "pending"));
 
     return {
-      totalOrdersToday: todayOrders.length,
+      totalOrdersToday: statsTodayOrders.length,
       salesToday,
       pending,
       avgMinutes,
@@ -246,8 +261,8 @@ export async function getDashboardStats() {
       peakSlot: peak ? { label: peak.label, booked: peak.booked, capacity: peak.capacity } : null,
       outOfStock,
       activeStudents: students.length,
-      totalOrdersAll: allOrders.length,
-      totalSalesAll: allOrders.reduce((s, o) => s + o.totalPkr, 0),
+      totalOrdersAll: statsOrders.length,
+      totalSalesAll: statsOrders.reduce((s, o) => s + o.totalPkr, 0),
       statusCounts,
       slots,
       menuCount: menu.length,
