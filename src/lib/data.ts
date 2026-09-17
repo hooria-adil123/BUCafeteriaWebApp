@@ -77,8 +77,27 @@ export async function todaySlotUsage() {
 export async function getSlotsWithUsage() {
   let slots = FALLBACK_SLOTS;
   try {
-    const dbSlots = await db.select().from(pickupSlots).orderBy(asc(pickupSlots.sortOrder));
-    if (dbSlots.length > 0) slots = dbSlots;
+    let dbSlots = await db.select().from(pickupSlots).orderBy(asc(pickupSlots.sortOrder));
+    if (dbSlots.length > 0) {
+      const existingLabels = new Set(dbSlots.map((slot) => slot.label));
+      const missingSlots = FALLBACK_SLOTS.filter((slot) => !existingLabels.has(slot.label));
+      if (missingSlots.length > 0) {
+        try {
+          await db.insert(pickupSlots).values(
+            missingSlots.map(({ label, sortOrder, capacity, active }) => ({
+              label,
+              sortOrder,
+              capacity,
+              active,
+            })),
+          );
+          dbSlots = await db.select().from(pickupSlots).orderBy(asc(pickupSlots.sortOrder));
+        } catch {
+          dbSlots = [...dbSlots, ...missingSlots];
+        }
+      }
+      slots = dbSlots;
+    }
   } catch {
     // DB offline, use fallback slots
   }

@@ -39,9 +39,9 @@ export function formatTime(value: Date | string) {
   return d.toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" });
 }
 
-export const ORDER_PLACEMENT_WINDOW = "8:30 AM – 5:20 PM";
+export const ORDER_PLACEMENT_WINDOW = "8:30 AM – 5:30 PM";
 export const CAFE_OPEN_MINUTES = 8 * 60 + 30; // 510 minutes -> 8:30 AM
-export const CAFE_CLOSE_MINUTES = 17 * 60 + 20; // 1040 minutes -> 5:20 PM
+export const CAFE_CLOSE_MINUTES = 17 * 60 + 30; // 1050 minutes -> 5:30 PM
 export const CAFE_TIME_ZONE =
   process.env.CAFE_TIME_ZONE ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 

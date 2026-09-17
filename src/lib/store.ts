@@ -279,6 +279,13 @@ export const FALLBACK_SLOTS: PickupSlot[] = [
   { id: 4, label: "1:00 PM", sortOrder: 4, capacity: 15, active: true },
   { id: 5, label: "1:30 PM", sortOrder: 5, capacity: 15, active: true },
   { id: 6, label: "2:00 PM", sortOrder: 6, capacity: 15, active: true },
+  { id: 7, label: "2:30 PM", sortOrder: 7, capacity: 15, active: true },
+  { id: 8, label: "3:00 PM", sortOrder: 8, capacity: 15, active: true },
+  { id: 9, label: "3:30 PM", sortOrder: 9, capacity: 15, active: true },
+  { id: 10, label: "4:00 PM", sortOrder: 10, capacity: 15, active: true },
+  { id: 11, label: "4:30 PM", sortOrder: 11, capacity: 15, active: true },
+  { id: 12, label: "5:00 PM", sortOrder: 12, capacity: 15, active: true },
+  { id: 13, label: "5:30 PM", sortOrder: 13, capacity: 15, active: true },
 ];
 
 export const INITIAL_USERS: User[] = [];

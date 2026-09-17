@@ -17,7 +17,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:20 PM");
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   async function load() {
     const res = await fetch("/api/cart");
@@ -33,7 +33,7 @@ export default function CartPage() {
       const hRes = await fetch("/api/cafeteria-hours");
       const hData = await hRes.json();
       setIsOpen(hData.isOpen ?? true);
-      setWindowLabel(hData.window ?? "8:30 AM – 5:20 PM");
+      setWindowLabel(hData.window ?? "8:30 AM – 5:30 PM");
     } catch {}
 
     setLoading(false);

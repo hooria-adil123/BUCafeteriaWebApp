@@ -25,7 +25,7 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState("");
   const [role, setRole] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:20 PM");
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/orders");
@@ -50,7 +50,7 @@ export default function AdminOrdersPage() {
       .then((r) => r.json())
       .then((d) => {
         setIsOpen(d.isOpen ?? true);
-        setWindowLabel(d.window ?? "8:30 AM – 5:20 PM");
+        setWindowLabel(d.window ?? "8:30 AM – 5:30 PM");
       })
       .catch(() => {});
   }, []);

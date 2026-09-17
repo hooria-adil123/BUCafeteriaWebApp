@@ -5,7 +5,7 @@ import { cartItems, menuItems, orderItems, orders, pickupSlots, users } from "@/
 import { createSignedOrderCookie, ORDER_COOKIE, requireUser } from "@/lib/auth";
 import { getCart, getSlotsWithUsage, nextOrderNumber } from "@/lib/data";
 import { isWithinOrderPlacementHours, ORDER_PLACEMENT_WINDOW, startOfToday } from "@/lib/utils";
-import { and, count, gte } from "drizzle-orm";
+import { and, count, gte, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +93,15 @@ export async function POST(request: Request) {
     let freshWallet = user.walletBalance;
     try {
       const [fresh] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
-      if (fresh) freshWallet = fresh.walletBalance;
+      if (fresh) {
+        if (fresh.walletBalance < user.walletBalance) {
+          await db
+            .update(users)
+            .set({ walletBalance: user.walletBalance })
+            .where(eq(users.id, user.id));
+        }
+        freshWallet = Math.max(fresh.walletBalance, user.walletBalance);
+      }
     } catch {
       const { fallbackUsers } = await import("@/lib/store");
       const fb = fallbackUsers.find((u) => u.id === user.id);
@@ -104,15 +112,26 @@ export async function POST(request: Request) {
       return Response.json({ error: "Insufficient wallet balance." }, { status: 400 });
     }
 
+    let walletCharged = false;
     try {
-      await db
+      const [updatedUser] = await db
         .update(users)
-        .set({ walletBalance: freshWallet - total })
-        .where(eq(users.id, user.id));
+        .set({ walletBalance: sql`${users.walletBalance} - ${total}` })
+        .where(and(eq(users.id, user.id), gte(users.walletBalance, total)))
+        .returning({ walletBalance: users.walletBalance });
+      walletCharged = Boolean(updatedUser);
     } catch {
-      const { fallbackUsers } = await import("@/lib/store");
+      walletCharged = false;
+    }
+
+    if (!walletCharged) {
+      const { fallbackUsers, savePersistedData } = await import("@/lib/store");
       const fb = fallbackUsers.find((u) => u.id === user.id);
-      if (fb) fb.walletBalance = freshWallet - total;
+      if (!fb || fb.walletBalance < total) {
+        return Response.json({ error: "Insufficient wallet balance." }, { status: 400 });
+      }
+      fb.walletBalance -= total;
+      savePersistedData();
     }
   }
 

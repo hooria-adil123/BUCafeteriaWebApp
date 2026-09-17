@@ -66,7 +66,7 @@ export default async function StudentDashboard() {
         />
         <DashboardCard
           label="Order hours"
-          value="8:30 AM – 5:20 PM"
+          value="8:30 AM – 5:30 PM"
           hint={status.isOpen ? "🟢 Open for orders · Mon–Sat" : "🔴 Closed for orders · Mon–Sat"}
           accent={status.isOpen}
         />

@@ -8,7 +8,7 @@ export function HoursSimulator() {
   const router = useRouter();
   const [mode, setMode] = useState<CafeHoursMode>("auto");
   const [isOpen, setIsOpen] = useState(true);
-  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:20 PM");
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function HoursSimulator() {
       .then((d) => {
         setMode(d.mode ?? "auto");
         setIsOpen(d.isOpen ?? false);
-        setWindowLabel(d.window ?? "8:30 AM – 5:20 PM");
+        setWindowLabel(d.window ?? "8:30 AM – 5:30 PM");
       })
       .catch(() => {});
   }, []);
@@ -70,7 +70,7 @@ export function HoursSimulator() {
                 ? "bg-navy text-white shadow-xs"
                 : "bg-white text-navy hover:bg-sky/50"
             }`}
-            title="Use the configured cafeteria clock (8:30 AM – 5:20 PM)"
+            title="Use the configured cafeteria clock (8:30 AM – 5:30 PM)"
           >
             Live Clock
           </button>
@@ -96,7 +96,7 @@ export function HoursSimulator() {
                 ? "bg-rose-700 text-white shadow-xs"
                 : "bg-white text-rose-700 hover:bg-rose-50"
             }`}
-            title="Simulate closed hours (after 5:20 PM)"
+            title="Simulate closed hours (after 5:30 PM)"
           >
             Simulate Closed
           </button>

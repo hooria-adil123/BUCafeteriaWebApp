@@ -18,7 +18,7 @@ export default function MenuPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(true);
-  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:20 PM");
+  const [windowLabel, setWindowLabel] = useState("8:30 AM – 5:30 PM");
 
   useEffect(() => {
     fetch("/api/menu")
@@ -30,7 +30,7 @@ export default function MenuPage() {
       .then((r) => r.json())
       .then((d) => {
         setIsOpen(d.isOpen ?? true);
-        setWindowLabel(d.window ?? "8:30 AM – 5:20 PM");
+        setWindowLabel(d.window ?? "8:30 AM – 5:30 PM");
       })
       .catch(() => {});
   }, []);
